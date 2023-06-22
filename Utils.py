@@ -1,4 +1,8 @@
+import glob
+import sys
 from pathlib import Path
+
+import serial
 
 ASSETS_PATH = Path(r"assets")
 
