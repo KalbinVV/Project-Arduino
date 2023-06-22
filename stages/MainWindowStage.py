@@ -1,11 +1,8 @@
 import tkinter as tk
-from time import sleep
-
-from SerialWriter import SerialWriterSingleton
 from Utils import relative_to_assets
 from stages.CryptInputWindowStage import CryptInputWindowStage
 from stages.DecryptInputWindowStage import DecryptInputWindowStage
-from stages.InitKeyWindowStage import InitKeyWindowStage
+from stages.KeyDataWindowStage import KeyDataWindowStage
 from stages.Stage import Stage
 
 
@@ -22,10 +19,6 @@ class MainWindowStage(Stage):
         return '822x481'
 
     def run(self, window: tk.Tk) -> None:
-        serial_writer = SerialWriterSingleton.init()
-
-        sleep(3.0)
-
         canvas = tk.Canvas(
             window,
             bg="#FFFFFF",
@@ -113,9 +106,9 @@ class MainWindowStage(Stage):
         create_key_button = tk.Button(
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: self.on_key_create(window),
+            command=lambda: self.on_key_data(window),
             relief="flat",
-            text="Создать ключ",
+            text="Данные ключа",
             font="Monospace 12 bold"
         )
         create_key_button.place(
@@ -148,8 +141,8 @@ class MainWindowStage(Stage):
         decrypt_input_stage.init()
 
     @classmethod
-    def on_key_create(cls, window: tk.Tk) -> None:
+    def on_key_data(cls, window: tk.Tk) -> None:
         window.destroy()
 
-        key_create_stage = InitKeyWindowStage()
-        key_create_stage.init()
+        key_data_stage = KeyDataWindowStage()
+        key_data_stage.init()

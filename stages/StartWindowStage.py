@@ -1,4 +1,6 @@
 import tkinter as tk
+from time import sleep
+from tkinter import messagebox
 
 from SerialWriter import SerialWriterSingleton
 from Utils import relative_to_assets
@@ -83,13 +85,14 @@ class StartWindowStage(Stage):
 
     @classmethod
     def on_connect_to_device(cls, window: tk.Tk) -> None:
-        window.destroy()
-
         try:
             SerialWriterSingleton.init()
+            sleep(1)
+
+            window.destroy()
 
             main_window_stage = MainWindowStage()
             main_window_stage.init()
         except OSError as e:
-            error_window_stage = ErrorWindowStage(e)
-            error_window_stage.init()
+            messagebox.showerror(title='Не удалось подключиться к ключу!',
+                                 message=str(e))

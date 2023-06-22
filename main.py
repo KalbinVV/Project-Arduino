@@ -1,6 +1,3 @@
-from time import sleep
-
-from SerialWriter import SerialWriterSingleton
 from stages.StartWindowStage import StartWindowStage
 
 

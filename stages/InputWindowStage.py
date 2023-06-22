@@ -101,10 +101,12 @@ class InputWindowStage(Stage):
         )
 
     def on_next_stage(self, window: tk.Tk, entry: tk.Entry):
-        if self.input_check(entry.get()):
+        text = entry.get()
+
+        if self.input_check(text):
             window.destroy()
 
-            self.to_next_stage()
+            self.to_next_stage(text)
         else:
             pass  # TODO: Добавить окно ошибки
 
@@ -113,5 +115,5 @@ class InputWindowStage(Stage):
         ...
 
     @abstractmethod
-    def to_next_stage(self) -> None:  # Функция, которая вызывается, если данные корректны
+    def to_next_stage(self, text: str) -> None:  # Функция, которая вызывается, если данные корректны
         pass

@@ -8,11 +8,14 @@ from Utils import get_serial_ports
 
 
 class SerialWriter:
+    _hash_value: Optional[str] = None
+    _key_value: Optional[str] = None
+
     def __init__(self):
         ports = get_serial_ports()
 
         if len(ports) == 0:
-            raise SerialException('Can\'t find arduino!')
+            raise SerialException('Не удалось обнаружить устройство!')
 
         print(ports[0])
 
@@ -25,7 +28,7 @@ class SerialWriter:
             print(line)
 
             if line != b'0\r\n' and line != b'':
-                return line.decode()
+                return line[0:line.rfind(b'0')].decode()
 
     def set_hash(self, hash_str: str) -> None:
         hash_status = self.write_and_receive('set_hash')
@@ -37,20 +40,22 @@ class SerialWriter:
         print(f'Arduino received and save hash: {received_hash}')
 
     def get_hash(self) -> Optional[str]:
-        hash_value = self.write_and_receive('get_hash')
+        if self._hash_value is None:
 
-        if hash_value == "Not":
-            return None
+            self._hash_value = self.write_and_receive('get_hash')
 
-        return hash_value
+            if self._hash_value == "Not":
+                return None
+
+        return self._hash_value
 
     def get_seconds(self) -> int:
         seconds = int(self.write_and_receive('get_seconds'))
 
         return seconds
 
-    def get_keys(self) -> list[tuple[int, int]]:
-        self.arduino.write('get_keys'.encode())
+    def generate_keys(self) -> list[tuple[int, int]]:
+        self.arduino.write('generate_keys'.encode())
 
         n = int(self.readline())
 
@@ -69,6 +74,21 @@ class SerialWriter:
 
         return [open_key, close_key]
 
+    def get_key(self) -> str:
+        if self._key_value is None:
+            self._key_value = self.write_and_receive('get_key')
+
+        return self._key_value
+
+    def set_key(self, key: str) -> str:
+        key_status = self.write_and_receive('set_key')
+
+        print(key_status)
+
+        received_key = self.write_and_receive(key)
+
+        print(f'Arduino received and save key: {received_key}')
+
     def write_and_receive(self, value: str) -> str:
         print(f'Value sent to arduino: {value}')
 
@@ -81,8 +101,6 @@ class SerialWriter:
         self.arduino.flush()
 
         return value_from_arduino
-
-
 
 
 class SerialWriterSingleton:

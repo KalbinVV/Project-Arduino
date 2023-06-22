@@ -15,6 +15,9 @@ class Stage:
     def run(self, window: tk.Tk) -> None:
         ...
 
+    def before_loop(self) -> None:
+        pass
+
     def init(self) -> None:
         window = tk.Tk()
 
@@ -29,5 +32,6 @@ class Stage:
 
         self.run(window)
 
+        self.before_loop()
         window.mainloop()
 

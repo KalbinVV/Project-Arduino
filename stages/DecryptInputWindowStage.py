@@ -10,7 +10,7 @@ class DecryptInputWindowStage(InputWindowStage):
     def input_check(self, text: str) -> bool:
         return True
 
-    def to_next_stage(self) -> None:
+    def to_next_stage(self, text: str) -> None:
         decrypt_window_stage = DecryptWindowStage()
 
         decrypt_window_stage.init()
