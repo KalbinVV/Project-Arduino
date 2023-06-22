@@ -1,5 +1,7 @@
 import tkinter as tk
+from time import sleep
 
+from SerialWriter import SerialWriterSingleton
 from Utils import relative_to_assets
 from stages.CryptInputWindowStage import CryptInputWindowStage
 from stages.DecryptInputWindowStage import DecryptInputWindowStage
@@ -20,6 +22,10 @@ class MainWindowStage(Stage):
         return '822x481'
 
     def run(self, window: tk.Tk) -> None:
+        serial_writer = SerialWriterSingleton.init()
+
+        sleep(3.0)
+
         canvas = tk.Canvas(
             window,
             bg="#FFFFFF",
@@ -40,10 +46,10 @@ class MainWindowStage(Stage):
             outline="")
 
         canvas.create_text(
-            340.0,
+            310.0,
             8.0,
             anchor="nw",
-            text="Название",
+            text="CryptShield",
             fill="#000000",
             font="Monospace 24 bold"
         )

@@ -1,6 +1,8 @@
 import tkinter as tk
 
+from SerialWriter import SerialWriterSingleton
 from Utils import relative_to_assets
+from stages.ErrorWindowStage import ErrorWindowStage
 from stages.MainWindowStage import MainWindowStage
 from stages.Stage import Stage
 
@@ -45,10 +47,10 @@ class StartWindowStage(Stage):
         )
 
         canvas.create_text(
-            110,
+            85,
             11.0,
             anchor="nw",
-            text="Название",
+            text="CryptShield",
             fill="#000000",
             font="Monospace 24"
         )
@@ -83,5 +85,11 @@ class StartWindowStage(Stage):
     def on_connect_to_device(cls, window: tk.Tk) -> None:
         window.destroy()
 
-        main_window_stage = MainWindowStage()
-        main_window_stage.init()
+        try:
+            SerialWriterSingleton.init()
+
+            main_window_stage = MainWindowStage()
+            main_window_stage.init()
+        except OSError as e:
+            error_window_stage = ErrorWindowStage(e)
+            error_window_stage.init()

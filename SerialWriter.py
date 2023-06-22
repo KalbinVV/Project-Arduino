@@ -2,19 +2,30 @@ from time import sleep
 from typing import Optional
 
 import serial
+from serial import SerialException
+
+from Utils import get_serial_ports
 
 
 class SerialWriter:
     def __init__(self):
-        self.arduino = serial.Serial('COM4', 9800, timeout=1)
+        ports = get_serial_ports()
+
+        if len(ports) == 0:
+            raise SerialException('Can\'t find arduino!')
+
+        print(ports[0])
+
+        self.arduino = serial.Serial(ports[0], baudrate=9600, timeout=1)
 
     def readline(self) -> str:
-        line = self.arduino.readline()
+        while True:
+            line = self.arduino.readline()
 
-        if len(line) == 0:
-            return self.readline()
-        else:
-            return line.decode()
+            print(line)
+
+            if line != b'0\r\n' and line != b'':
+                return line.decode()
 
     def set_hash(self, hash_str: str) -> None:
         hash_status = self.write_and_receive('set_hash')
@@ -37,6 +48,26 @@ class SerialWriter:
         seconds = int(self.write_and_receive('get_seconds'))
 
         return seconds
+
+    def get_keys(self) -> list[tuple[int, int]]:
+        self.arduino.write('get_keys'.encode())
+
+        n = int(self.readline())
+
+        print(f'N: {n}')
+
+        e = int(self.readline())
+
+        print(f'E: {e}')
+
+        d = int(self.readline())
+
+        print(f'D: {d}')
+
+        open_key = e, n
+        close_key = d, n
+
+        return [open_key, close_key]
 
     def write_and_receive(self, value: str) -> str:
         print(f'Value sent to arduino: {value}')
