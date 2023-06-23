@@ -4,7 +4,7 @@ from typing import Optional
 import serial
 from serial import SerialException
 
-from Utils import get_serial_ports
+from Utils import get_serial_ports, Keys
 
 
 class SerialWriter:
@@ -28,7 +28,7 @@ class SerialWriter:
             print(line)
 
             if line != b'0\r\n' and line != b'':
-                return line[0:line.rfind(b'0')].decode()
+                return line[0:line.rfind(b'0')].decode('ascii')
 
     def set_hash(self, hash_str: str) -> None:
         hash_status = self.write_and_receive('set_hash')
@@ -54,8 +54,8 @@ class SerialWriter:
 
         return seconds
 
-    def generate_keys(self) -> list[tuple[int, int]]:
-        self.arduino.write('generate_keys'.encode())
+    def generate_keys(self) -> Keys:
+        self.arduino.write('generate_keys'.encode('ascii'))
 
         n = int(self.readline())
 
@@ -72,7 +72,7 @@ class SerialWriter:
         open_key = e, n
         close_key = d, n
 
-        return [open_key, close_key]
+        return Keys(open_key, close_key)
 
     def get_key(self) -> str:
         if self._key_value is None:
@@ -80,7 +80,7 @@ class SerialWriter:
 
         return self._key_value
 
-    def set_key(self, key: str) -> str:
+    def set_key(self, key: str) -> None:
         key_status = self.write_and_receive('set_key')
 
         print(key_status)
@@ -92,7 +92,7 @@ class SerialWriter:
     def write_and_receive(self, value: str) -> str:
         print(f'Value sent to arduino: {value}')
 
-        self.arduino.write(value.encode())
+        self.arduino.write(value.encode('ascii'))
 
         value_from_arduino = self.readline()
 

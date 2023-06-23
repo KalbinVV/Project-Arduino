@@ -1,11 +1,18 @@
+import threading
 import tkinter as tk
+from time import sleep
 
+from Crypto.Cipher import AES
+
+from SerialWriter import SerialWriterSingleton
+from Utils import Keys
 from stages.Stage import Stage
 
 
 class CryptWindowStage(Stage):
-    def __init__(self):
+    def __init__(self, password: str):
         self.text_box = None
+        self.password = password
 
     def get_title(self) -> str:
         return 'Шифрование'
@@ -73,3 +80,27 @@ class CryptWindowStage(Stage):
             width=822.0,
             height=245.0
         )
+
+        self.text_box.insert('end', '[INFO] Хэш пароля сохранен!\n')
+
+        crypt_thread = threading.Thread(target=self.crypt_function)
+        crypt_thread.start()
+
+    def crypt_function(self):
+        serial_writer = SerialWriterSingleton.init()
+
+        self.text_box.insert('end', f'[INFO] Пароль получен!\n')
+
+        keys: Keys = serial_writer.generate_keys()
+
+        self.text_box.insert('end', f'[INFO] Ключи шифрования сгенерированы!\n')
+
+        close_key_str = f'{keys.close_key[0]} {keys.close_key[1]}'
+
+        print(f'Строковое представление закрытого ключа: {close_key_str}')
+        serial_writer.set_key(close_key_str)
+
+        self.text_box.insert('end', f'[INFO] Закрытый ключ сохранен!')
+
+
+

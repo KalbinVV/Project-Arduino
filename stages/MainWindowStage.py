@@ -2,7 +2,7 @@ import tkinter as tk
 from Utils import relative_to_assets
 from stages.CryptInputWindowStage import CryptInputWindowStage
 from stages.DecryptInputWindowStage import DecryptInputWindowStage
-from stages.KeyDataWindowStage import KeyDataWindowStage
+from stages.KeyTestWindowStage import KeyTestWindowStage
 from stages.Stage import Stage
 
 
@@ -106,9 +106,9 @@ class MainWindowStage(Stage):
         create_key_button = tk.Button(
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: self.on_key_data(window),
+            command=lambda: self.on_key_test(window),
             relief="flat",
-            text="Данные ключа",
+            text="Тест ключа",
             font="Monospace 12 bold"
         )
         create_key_button.place(
@@ -141,8 +141,8 @@ class MainWindowStage(Stage):
         decrypt_input_stage.init()
 
     @classmethod
-    def on_key_data(cls, window: tk.Tk) -> None:
+    def on_key_test(cls, window: tk.Tk) -> None:
         window.destroy()
 
-        key_data_stage = KeyDataWindowStage()
-        key_data_stage.init()
+        key_test_stage = KeyTestWindowStage()
+        key_test_stage.init()

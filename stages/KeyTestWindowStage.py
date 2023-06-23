@@ -6,12 +6,12 @@ from SerialWriter import SerialWriterSingleton
 from stages.Stage import Stage
 
 
-class KeyDataWindowStage(Stage):
+class KeyTestWindowStage(Stage):
     def __init__(self):
         self.text_box: Optional[tk.Text] = None
 
     def get_title(self) -> str:
-        return 'Данные ключа'
+        return 'Тест ключа'
 
     def get_geometry(self) -> str:
         return '822x483'
@@ -59,7 +59,7 @@ class KeyDataWindowStage(Stage):
             350.0,
             77.0,
             anchor="nw",
-            text="Данные ключа:",
+            text="Тест ключа:",
             fill="#000000",
             font="Monospace 16 bold"
         )
@@ -83,14 +83,10 @@ class KeyDataWindowStage(Stage):
         seconds = serial_writer.get_seconds()
         generated_keys = serial_writer.generate_keys()
         hash_value = serial_writer.get_hash()
-        key_value = serial_writer.get_key()
 
         self.text_box.insert('end', f'Хэш: {hash_value}\n')
-        self.text_box.insert('end', f'Закрытый ключ: {key_value}\n')
         self.text_box.insert('end', f'Время на внутренних часах: {seconds}\n')
         self.text_box.insert('end', f'Тест генерации ключей: {generated_keys}\n')
         self.text_box.insert('end', f'Если все поля выводятся корректно, то ключ функционирует исправно!')
 
         self.text_box.configure(state='disabled')
-
-        print(f'Hash: {hash_value}')

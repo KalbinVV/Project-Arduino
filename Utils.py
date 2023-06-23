@@ -1,8 +1,15 @@
 import glob
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 import serial
+
+
+class Keys(NamedTuple):
+    open_key: tuple[int, int]
+    close_key: tuple[int, int]
+
 
 ASSETS_PATH = Path(r"assets")
 
