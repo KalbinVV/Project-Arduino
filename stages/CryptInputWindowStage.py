@@ -12,14 +12,7 @@ class CryptInputWindowStage(InputWindowStage):
         return 'Зашифровать'
 
     def input_check(self, text: str) -> bool:
-        text_length = len(text)
-
-        if text_length not in [16, 24, 32]:
-            messagebox.showerror(title='Неверная длина ключа!',
-                                 message='Длина ключа должна равняться 16,24, либо 32 битам!')
-            return False
-        else:
-            return True
+        return True
 
     def to_next_stage(self, text: str) -> None:
         key_hash = hashlib.md5(text.encode('ascii')).hexdigest()

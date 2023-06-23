@@ -1,9 +1,12 @@
+import os
 import threading
 import tkinter as tk
 from time import sleep
+from tkinter import filedialog
 
 from Crypto.Cipher import AES
 
+from Crypt import crypt_file
 from SerialWriter import SerialWriterSingleton
 from Utils import Keys
 from stages.Stage import Stage
@@ -100,7 +103,28 @@ class CryptWindowStage(Stage):
         print(f'Строковое представление закрытого ключа: {close_key_str}')
         serial_writer.set_key(close_key_str)
 
-        self.text_box.insert('end', f'[INFO] Закрытый ключ сохранен!')
+        self.text_box.insert('end', f'[INFO] Закрытый ключ сохранен!\n')
+
+        folder_selected = filedialog.askdirectory()
+
+        self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
+
+        for f_path in os.listdir(folder_selected):
+            file_path = os.path.join(folder_selected, f_path)
+
+            if os.path.isfile(file_path):
+                self.text_box.insert('end', f'[INFO] Шифрование файла {f_path}...\n')
+                crypt_file(keys.open_key, folder_selected, file_path)
+                self.text_box.insert('end', f'[INFO] Файл зашифрован: {f_path}!\n')
+
+                os.remove(file_path)
+
+                self.text_box.insert('end', f'[INFO] Исходный файл удален: {f_path}\n')
+
+        self.text_box.insert('end', f'[INFO] Процесс шифрования закончен, вы можете закрыть это окно!')
+
+
+
 
 
 

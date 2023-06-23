@@ -1,11 +1,16 @@
+import os
+import threading
 import tkinter as tk
+from tkinter import filedialog
 
+from Crypt import decrypt_file
+from SerialWriter import SerialWriterSingleton
 from stages.Stage import Stage
 
 
 class DecryptWindowStage(Stage):
     def __init__(self):
-        self.text_box = None
+        self.text_box: tk.Text = None
 
     def get_title(self) -> str:
         return 'Расшифрование'
@@ -73,3 +78,42 @@ class DecryptWindowStage(Stage):
             width=822.0,
             height=245.0
         )
+
+        decrypt_thread = threading.Thread(target=self.decrypt_thread)
+        decrypt_thread.start()
+    def decrypt_thread(self):
+        serial_writer = SerialWriterSingleton.init()
+
+        self.text_box.insert('end', '[INFO] Получение закрытого ключа...\n')
+
+        close_key_str = serial_writer.get_key()
+
+        self.text_box.insert('end', '[INFO] Закрытый ключ получен!\n')
+
+        self.text_box.insert('end', '[INFO] Расшифровка закрытого ключа...')
+
+        close_key_tuple = tuple(map(int, close_key_str.split()))
+
+        self.text_box.insert('end', '[INFO] Закрытый ключ расшифрован!\n')
+
+        print(close_key_tuple)
+
+        folder_selected = filedialog.askdirectory()
+
+        self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
+
+        for f_path in os.listdir(folder_selected):
+            file_path = os.path.join(folder_selected, f_path)
+
+            if os.path.isfile(file_path):
+                self.text_box.insert('end', f'[INFO] Расшифрование файла {f_path}...\n')
+                decrypt_file(close_key_tuple, folder_selected, file_path)
+                self.text_box.insert('end', f'[INFO] Файл расшифрован: {f_path}!\n')
+
+                os.remove(file_path)
+
+                self.text_box.insert('end', f'[INFO] Исходный файл удален: {f_path}\n')
+
+        self.text_box.insert('end', f'[INFO] Процесс расшифрования закончен, вы можете закрыть это окно!')
+
+
