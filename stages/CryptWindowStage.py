@@ -1,8 +1,9 @@
+import logging
 import os
 import threading
 import tkinter as tk
 from time import sleep
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 
 from Crypto.Cipher import AES
 
@@ -100,7 +101,7 @@ class CryptWindowStage(Stage):
 
         close_key_str = f'{keys.close_key[0]} {keys.close_key[1]}'
 
-        print(f'Строковое представление закрытого ключа: {close_key_str}')
+        logging.debug(f'Close key str: {close_key_str}')
         serial_writer.set_key(close_key_str)
 
         self.text_box.insert('end', f'[INFO] Закрытый ключ сохранен!\n')
@@ -122,6 +123,9 @@ class CryptWindowStage(Stage):
                 self.text_box.insert('end', f'[INFO] Исходный файл удален: {f_path}\n')
 
         self.text_box.insert('end', f'[INFO] Процесс шифрования закончен, вы можете закрыть это окно!')
+
+        messagebox.showinfo(title='Процесс закончен!',
+                            message='Шифрование закончено, вы можете закрыть окно и извлечь ключ!')
 
 
 

@@ -87,7 +87,7 @@ class StartWindowStage(Stage):
     def on_connect_to_device(cls, window: tk.Tk) -> None:
         try:
             SerialWriterSingleton.init()
-            sleep(1)
+            sleep(2)
 
             window.destroy()
 

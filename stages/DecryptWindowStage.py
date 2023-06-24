@@ -1,7 +1,7 @@
 import os
 import threading
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 
 from Crypt import decrypt_file
 from SerialWriter import SerialWriterSingleton
@@ -81,6 +81,7 @@ class DecryptWindowStage(Stage):
 
         decrypt_thread = threading.Thread(target=self.decrypt_thread)
         decrypt_thread.start()
+
     def decrypt_thread(self):
         serial_writer = SerialWriterSingleton.init()
 
@@ -95,8 +96,6 @@ class DecryptWindowStage(Stage):
         close_key_tuple = tuple(map(int, close_key_str.split()))
 
         self.text_box.insert('end', '[INFO] Закрытый ключ расшифрован!\n')
-
-        print(close_key_tuple)
 
         folder_selected = filedialog.askdirectory()
 
@@ -115,5 +114,8 @@ class DecryptWindowStage(Stage):
                 self.text_box.insert('end', f'[INFO] Исходный файл удален: {f_path}\n')
 
         self.text_box.insert('end', f'[INFO] Процесс расшифрования закончен, вы можете закрыть это окно!')
+
+        messagebox.showinfo(title='Процесс закончен!',
+                            message='Расшифрование закончено, вы можете закрыть окно и извлечь ключ!')
 
 

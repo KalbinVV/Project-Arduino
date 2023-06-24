@@ -1,5 +1,8 @@
+import logging
 import os.path
-from math import isqrt
+from functools import cache
+from math import isqrt, gcd
+
 
 def phi(n: int) -> int:
     result = n
@@ -17,6 +20,7 @@ def phi(n: int) -> int:
     return result
 
 
+@cache
 def mod_pow(number: int, power: int, modulo: int):
     result = 1
 
@@ -39,12 +43,6 @@ def get_file_content(file_name: str) -> str | bytes:
     return content
 
 
-def rsa_crypt(content, open_key: tuple) -> str:
-    e, n = open_key
-
-    return ' '.join(map(str, [mod_pow(byte, e, n) for byte in content]))
-
-
 def rsa_decrypt(content, close_key: tuple) -> bytes:
     d, n = close_key
 
@@ -52,20 +50,25 @@ def rsa_decrypt(content, close_key: tuple) -> bytes:
 
 
 def crypt_file(open_key: tuple[int, int], directory_path: str, file_path: str) -> None:
-    content = get_file_content(file_path)
-
-    crypted_content = rsa_crypt(content, open_key)
-
     file_name = os.path.basename(file_path)
 
     crypted_file_name = f'{file_name}.crypted'
 
     crypted_file_path = os.path.join(directory_path, crypted_file_name)
 
-    with open(crypted_file_path, 'w') as f:
-        f.write(crypted_content)
+    e, n = open_key
 
-    print(f'File crypted as {crypted_file_name}')
+    with open(file_path, 'rb') as source_file:
+        with open(crypted_file_path, 'w') as dst_file:
+            byte = source_file.read(1)
+            while byte:
+                int_value = int.from_bytes(byte, byteorder='big')
+
+                dst_file.write(f'{mod_pow(int_value, e, n)} ')
+
+                byte = source_file.read(1)
+
+    logging.info(f'File crypted as {crypted_file_name}')
 
 
 def decrypt_file(close_key: tuple, directory_path: str, file_path: str) -> None:
@@ -75,11 +78,39 @@ def decrypt_file(close_key: tuple, directory_path: str, file_path: str) -> None:
 
     decrypted_content = rsa_decrypt(map(int, content.split()), close_key)
 
-    decrypted_file_name = f'{file_name}.decrypted'
+    decrypted_file_name = file_name[0:file_name.rfind('.crypted')]
 
     decrypted_file_path = os.path.join(directory_path, decrypted_file_name)
 
     with open(decrypted_file_path, 'wb') as file:
         file.write(decrypted_content)
 
-    print(f'File decrypted as {decrypted_file_name}')
+    logging.info(f'File decrypted as {decrypted_file_name}')
+
+
+def is_prime(n: int) -> bool:
+    for i in range(2, isqrt(n) + 1):
+        if n % i == 0:
+            return False
+
+    return True
+
+
+def get_multiplicative_inverse(number: int, modulo: int) -> int:
+    return mod_pow(number, phi(modulo) - 1, modulo)
+
+
+def rsa_get_open_key(euler: int) -> int:
+    a = 0
+    b = 0
+
+    for i in range(1, euler):
+        if is_prime(i):
+            if gcd(i, euler) == 1:
+                return i
+
+    return 0
+
+
+def rsa_get_close_key(p: int, q: int, e: int) -> int:
+    return get_multiplicative_inverse(e, phi(p * q))

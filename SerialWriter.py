@@ -1,9 +1,10 @@
-from time import sleep
+import logging
 from typing import Optional
 
 import serial
 from serial import SerialException
 
+from Crypt import rsa_get_close_key, rsa_get_open_key
 from Utils import get_serial_ports, Keys
 
 
@@ -17,27 +18,30 @@ class SerialWriter:
         if len(ports) == 0:
             raise SerialException('Не удалось обнаружить устройство!')
 
-        print(ports[0])
+        logging.info(f'Port: {ports[0]}')
 
         self.arduino = serial.Serial(ports[0], baudrate=9600, timeout=1)
 
-    def readline(self) -> str:
+    def readline(self, is_secure_read: bool = True) -> str:
         while True:
             line = self.arduino.readline()
 
-            print(line)
+            logging.debug(f'[Arduino] {line}')
 
             if line != b'0\r\n' and line != b'':
-                return line[0:line.rfind(b'0')].decode('ascii')
+                if is_secure_read:
+                    return line[0:line.rfind(b'0')].decode('ascii')
+                else:
+                    return line.decode('ascii')
 
     def set_hash(self, hash_str: str) -> None:
         hash_status = self.write_and_receive('set_hash')
 
-        print(hash_status)
+        logging.debug(f'Hash status: {hash_status}')
 
         received_hash = self.write_and_receive(hash_str)
 
-        print(f'Arduino received and save hash: {received_hash}')
+        logging.debug(f'Arduino received and save hash: {received_hash}')
 
     def get_hash(self) -> Optional[str]:
         if self._hash_value is None:
@@ -57,22 +61,30 @@ class SerialWriter:
     def generate_keys(self) -> Keys:
         self.arduino.write('generate_keys'.encode('ascii'))
 
-        n = int(self.readline())
+        p = int(self.readline())
 
-        print(f'N: {n}')
+        logging.debug(f'p: {p}')
 
-        e = int(self.readline())
+        q = int(self.readline())
 
-        print(f'E: {e}')
+        logging.debug(f'q: {q}')
 
-        d = int(self.readline())
+        euler = (p - 1) * (q - 1)
 
-        print(f'D: {d}')
+        e = rsa_get_open_key(euler)
+
+        n = p * q
+
+        d = rsa_get_close_key(p, q, e)
 
         open_key = e, n
         close_key = d, n
 
-        return Keys(open_key, close_key)
+        keys = Keys(open_key, close_key)
+
+        logging.debug(f'Generated keys: {keys}')
+
+        return keys
 
     def get_key(self) -> str:
         if self._key_value is None:
@@ -83,20 +95,20 @@ class SerialWriter:
     def set_key(self, key: str) -> None:
         key_status = self.write_and_receive('set_key')
 
-        print(key_status)
+        logging.debug(f'Key status: {key_status}')
 
-        received_key = self.write_and_receive(key)
+        received_key = self.write_and_receive(key, False)
 
-        print(f'Arduino received and save key: {received_key}')
+        logging.debug(f'Arduino received and save key: {received_key}')
 
-    def write_and_receive(self, value: str) -> str:
-        print(f'Value sent to arduino: {value}')
+    def write_and_receive(self, value: str, is_secure_read: bool = True) -> str:
+        logging.debug(f'Value sent to arduino: {value}')
 
         self.arduino.write(value.encode('ascii'))
 
-        value_from_arduino = self.readline()
+        value_from_arduino = self.readline(is_secure_read)
 
-        print(f'From arduino: {value_from_arduino}')
+        logging.debug(f'From arduino: {value_from_arduino}')
 
         self.arduino.flush()
 

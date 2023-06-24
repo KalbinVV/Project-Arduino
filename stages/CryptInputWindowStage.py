@@ -15,7 +15,7 @@ class CryptInputWindowStage(InputWindowStage):
         return True
 
     def to_next_stage(self, text: str) -> None:
-        key_hash = hashlib.md5(text.encode('ascii')).hexdigest()
+        key_hash = hashlib.md5(text.encode()).hexdigest()
 
         serial_writer = SerialWriterSingleton.init()
 
