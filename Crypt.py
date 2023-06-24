@@ -49,7 +49,7 @@ def rsa_decrypt(content, close_key: tuple) -> bytes:
     return bytes([mod_pow(byte, d, n) for byte in content])
 
 
-def crypt_file(open_key: tuple[int, int], directory_path: str, file_path: str) -> None:
+def rsa_crypt_file(open_key: tuple[int, int], directory_path: str, file_path: str) -> None:
     file_name = os.path.basename(file_path)
 
     crypted_file_name = f'{file_name}.crypted'
@@ -71,19 +71,37 @@ def crypt_file(open_key: tuple[int, int], directory_path: str, file_path: str) -
     logging.info(f'File crypted as {crypted_file_name}')
 
 
-def decrypt_file(close_key: tuple, directory_path: str, file_path: str) -> None:
-    content = get_file_content(file_path)
-
+def rsa_decrypt_file(close_key: tuple, directory_path: str, file_path: str) -> None:
     file_name = os.path.basename(file_path)
-
-    decrypted_content = rsa_decrypt(map(int, content.split()), close_key)
 
     decrypted_file_name = file_name[0:file_name.rfind('.crypted')]
 
     decrypted_file_path = os.path.join(directory_path, decrypted_file_name)
 
-    with open(decrypted_file_path, 'wb') as file:
-        file.write(decrypted_content)
+    d, n = close_key
+
+    with open(file_path, 'r') as source_file:
+        with open(decrypted_file_path, 'wb') as dst_file:
+            byte = source_file.read(1)
+
+            while byte:
+                value = byte
+
+                while True:
+                    byte = source_file.read(1)
+
+                    if not byte or byte == ' ':
+                        break
+
+                    value += byte
+
+                int_value = int(value)
+
+                decrypted_byte = bytes([mod_pow(int_value, d, n)])
+
+                dst_file.write(decrypted_byte)
+
+                byte = source_file.read(1)
 
     logging.info(f'File decrypted as {decrypted_file_name}')
 
@@ -104,7 +122,7 @@ def rsa_get_open_key(euler: int) -> int:
     a = 0
     b = 0
 
-    for i in range(1, euler):
+    for i in range(2, euler):
         if is_prime(i):
             if gcd(i, euler) == 1:
                 return i

@@ -5,9 +5,7 @@ import tkinter as tk
 from time import sleep
 from tkinter import filedialog, messagebox
 
-from Crypto.Cipher import AES
-
-from Crypt import crypt_file
+from Crypt import rsa_crypt_file
 from SerialWriter import SerialWriterSingleton
 from Utils import Keys
 from stages.Stage import Stage
@@ -110,23 +108,43 @@ class CryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 
-        for f_path in os.listdir(folder_selected):
-            file_path = os.path.join(folder_selected, f_path)
+        crypt_file_threads: list[threading.Thread] = []
 
-            if os.path.isfile(file_path):
-                self.text_box.insert('end', f'[INFO] Шифрование файла {f_path}...\n')
-                crypt_file(keys.open_key, folder_selected, file_path)
-                self.text_box.insert('end', f'[INFO] Файл зашифрован: {f_path}!\n')
+        self.crypt_folder(keys.open_key, folder_selected, crypt_file_threads)
 
-                os.remove(file_path)
-
-                self.text_box.insert('end', f'[INFO] Исходный файл удален: {f_path}\n')
+        for thread in crypt_file_threads:
+            while thread.is_alive():
+                sleep(1.0)
 
         self.text_box.insert('end', f'[INFO] Процесс шифрования закончен, вы можете закрыть это окно!')
 
         messagebox.showinfo(title='Процесс закончен!',
                             message='Шифрование закончено, вы можете закрыть окно и извлечь ключ!')
 
+    def crypt_file(self, open_key: tuple[int, int], folder_selected: str, file_path: str) -> None:
+        self.text_box.insert('end', f'[INFO] Шифрование файла {file_path}...\n')
+
+        rsa_crypt_file(open_key, folder_selected, file_path)
+        self.text_box.insert('end', f'[INFO] Файл зашифрован: {file_path}!\n')
+
+        os.remove(file_path)
+
+        self.text_box.insert('end', f'[INFO] Исходный файл удален: {file_path}\n')
+
+    def crypt_folder(self, open_key: tuple[int, int],
+                     folder_path: str, crypt_threads: list[threading.Thread]) -> None:
+        for f_path in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, f_path)
+
+            if os.path.isfile(file_path):
+                crypt_file_thread = threading.Thread(target=self.crypt_file,
+                                                     args=(open_key, folder_path, file_path))
+
+                crypt_file_thread.start()
+
+                crypt_threads.append(crypt_file_thread)
+            else:
+                self.crypt_folder(open_key, file_path, crypt_threads)
 
 
 

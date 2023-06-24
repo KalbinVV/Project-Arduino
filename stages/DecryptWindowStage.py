@@ -1,16 +1,18 @@
 import os
 import threading
 import tkinter as tk
+from time import sleep
 from tkinter import filedialog, messagebox
+from typing import Optional
 
-from Crypt import decrypt_file
+from Crypt import rsa_decrypt_file
 from SerialWriter import SerialWriterSingleton
 from stages.Stage import Stage
 
 
 class DecryptWindowStage(Stage):
     def __init__(self):
-        self.text_box: tk.Text = None
+        self.text_box: Optional[tk.Text] = None
 
     def get_title(self) -> str:
         return 'Расшифрование'
@@ -101,21 +103,40 @@ class DecryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 
-        for f_path in os.listdir(folder_selected):
-            file_path = os.path.join(folder_selected, f_path)
+        decrypt_file_threads: list[threading.Thread] = []
 
-            if os.path.isfile(file_path):
-                self.text_box.insert('end', f'[INFO] Расшифрование файла {f_path}...\n')
-                decrypt_file(close_key_tuple, folder_selected, file_path)
-                self.text_box.insert('end', f'[INFO] Файл расшифрован: {f_path}!\n')
+        self.decrypt_folder(close_key_tuple, folder_selected, decrypt_file_threads)
 
-                os.remove(file_path)
-
-                self.text_box.insert('end', f'[INFO] Исходный файл удален: {f_path}\n')
+        for thread in decrypt_file_threads:
+            while thread.is_alive():
+                sleep(1.0)
 
         self.text_box.insert('end', f'[INFO] Процесс расшифрования закончен, вы можете закрыть это окно!')
 
         messagebox.showinfo(title='Процесс закончен!',
                             message='Расшифрование закончено, вы можете закрыть окно и извлечь ключ!')
 
+    def decrypt_file(self, close_key: tuple, folder_selected: str, file_path: str) -> None:
+        self.text_box.insert('end', f'[INFO] Расшифрование файла {file_path}...\n')
 
+        rsa_decrypt_file(close_key, folder_selected, file_path)
+        self.text_box.insert('end', f'[INFO] Файл расшифрован: {file_path}!\n')
+
+        os.remove(file_path)
+
+        self.text_box.insert('end', f'[INFO] Исходный файл удален: {file_path}\n')
+
+    def decrypt_folder(self, close_key: tuple,
+                       folder_path: str, decrypt_threads: list[threading.Thread]) -> None:
+        for f_path in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, f_path)
+
+            if os.path.isfile(file_path):
+                crypt_file_thread = threading.Thread(target=self.decrypt_file,
+                                                     args=(close_key, folder_path, file_path))
+
+                crypt_file_thread.start()
+
+                decrypt_threads.append(crypt_file_thread)
+            else:
+                self.decrypt_folder(close_key, file_path, decrypt_threads)
