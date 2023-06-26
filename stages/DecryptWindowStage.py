@@ -93,13 +93,19 @@ class DecryptWindowStage(Stage):
 
         self.text_box.insert('end', '[INFO] Закрытый ключ получен!\n')
 
-        self.text_box.insert('end', '[INFO] Расшифровка закрытого ключа...')
+        self.text_box.insert('end', '[INFO] Расшифровка закрытого ключа...\n')
 
         close_key_tuple = tuple(map(int, close_key_str.split()))
 
         self.text_box.insert('end', '[INFO] Закрытый ключ расшифрован!\n')
 
         folder_selected = filedialog.askdirectory()
+
+        if isinstance(folder_selected, tuple):  # Если пользователь не выбрал директорию
+            messagebox.showerror(title='Директория не была выбрана!',
+                                 message='Процесс шифрования прекращен!')
+
+            return
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 

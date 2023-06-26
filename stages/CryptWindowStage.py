@@ -4,7 +4,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-from Crypt import rsa_crypt_file
+from Crypt import rsa_crypt_file, check_rsa_keys_correctness
 from SerialWriter import SerialWriterSingleton
 from Utils import Keys
 from stages.Stage import Stage
@@ -94,6 +94,13 @@ class CryptWindowStage(Stage):
 
         keys: Keys = serial_writer.generate_keys()
 
+        self.text_box.insert('end', f'[INFO] Валидация ключа...\n')
+
+        while not check_rsa_keys_correctness(keys):
+            self.text_box.insert('end', f'[INFO] Ключи не прошли валидацию, повторная попытка!\n')
+
+            keys = serial_writer.generate_keys()
+
         self.text_box.insert('end', f'[INFO] Ключи шифрования сгенерированы!\n')
 
         close_key_str = f'{keys.close_key[0]} {keys.close_key[1]}'
@@ -104,6 +111,12 @@ class CryptWindowStage(Stage):
         self.text_box.insert('end', f'[INFO] Закрытый ключ сохранен!\n')
 
         folder_selected = filedialog.askdirectory()
+
+        if isinstance(folder_selected, tuple):  # Если пользователь не выбрал директорию
+            messagebox.showerror(title='Директория не была выбрана!',
+                                 message='Процесс шифрования прекращен!')
+
+            return
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 

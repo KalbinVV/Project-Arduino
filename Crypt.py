@@ -1,7 +1,10 @@
 import logging
 import os.path
+import shutil
 from functools import cache
 from math import isqrt, gcd
+
+from Utils import Keys
 
 
 def phi(n: int) -> int:
@@ -132,3 +135,39 @@ def rsa_get_open_key(euler: int) -> int:
 
 def rsa_get_close_key(p: int, q: int, e: int) -> int:
     return get_multiplicative_inverse(e, phi(p * q))
+
+
+def check_rsa_keys_correctness(keys: Keys) -> bool:
+    sample_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                  'Vestibulum finibus arcu et neque pharetra ultricies. ' \
+                  'Integer ac eros non lectus feugiat tempus nec id augue. ' \
+                  'Curabitur vel commodo turpis. Donec finibus viverra malesuada.'
+
+    samples_directory = 'sample'
+    sample_file_path = os.path.join('sample', 'sample.txt')
+
+    if not os.path.exists(samples_directory):
+        os.mkdir(samples_directory)
+
+    with open(sample_file_path, 'w') as sample_file:
+        sample_file.write(sample_text)
+
+    keys_is_correct = True
+
+    try:
+        rsa_crypt_file(keys.open_key, samples_directory, sample_file_path)
+    except (Exception, ) as e:
+        keys_is_correct = False
+
+    if keys_is_correct:
+        crypted_file_path = os.path.join(samples_directory, 'sample.txt.crypted')
+
+        try:
+            rsa_decrypt_file(keys.close_key, samples_directory, crypted_file_path)
+        except (Exception, ) as e:
+            keys_is_correct = False
+
+    if os.path.exists(samples_directory):
+        shutil.rmtree(samples_directory)
+
+    return keys_is_correct
