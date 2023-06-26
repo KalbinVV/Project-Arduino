@@ -2,7 +2,6 @@ import logging
 import os
 import threading
 import tkinter as tk
-from time import sleep
 from tkinter import filedialog, messagebox
 
 from Crypt import rsa_crypt_file
@@ -108,13 +107,7 @@ class CryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 
-        crypt_file_threads: list[threading.Thread] = []
-
-        self.crypt_folder(keys.open_key, folder_selected, crypt_file_threads)
-
-        for thread in crypt_file_threads:
-            while thread.is_alive():
-                sleep(1.0)
+        self.crypt_folder(keys.open_key, folder_selected)
 
         self.text_box.insert('end', f'[INFO] Процесс шифрования закончен, вы можете закрыть это окно!')
 
@@ -131,20 +124,14 @@ class CryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Исходный файл удален: {file_path}\n')
 
-    def crypt_folder(self, open_key: tuple[int, int],
-                     folder_path: str, crypt_threads: list[threading.Thread]) -> None:
+    def crypt_folder(self, open_key: tuple[int, int], folder_path: str) -> None:
         for f_path in os.listdir(folder_path):
             file_path = os.path.join(folder_path, f_path)
 
             if os.path.isfile(file_path):
-                crypt_file_thread = threading.Thread(target=self.crypt_file,
-                                                     args=(open_key, folder_path, file_path))
-
-                crypt_file_thread.start()
-
-                crypt_threads.append(crypt_file_thread)
+                self.crypt_file(open_key, folder_path, file_path)
             else:
-                self.crypt_folder(open_key, file_path, crypt_threads)
+                self.crypt_folder(open_key, file_path)
 
 
 

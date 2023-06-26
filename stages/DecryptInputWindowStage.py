@@ -17,7 +17,7 @@ class DecryptInputWindowStage(InputWindowStage):
         return 'Расшифровать'
 
     def input_check(self, text: str) -> bool:
-        text = hashlib.md5(text.encode('ascii')).hexdigest()
+        text = hashlib.md5(text.encode()).hexdigest()
 
         if text == self.__hash_value:
             return True

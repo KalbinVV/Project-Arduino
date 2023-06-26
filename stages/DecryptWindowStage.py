@@ -103,13 +103,7 @@ class DecryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 
-        decrypt_file_threads: list[threading.Thread] = []
-
-        self.decrypt_folder(close_key_tuple, folder_selected, decrypt_file_threads)
-
-        for thread in decrypt_file_threads:
-            while thread.is_alive():
-                sleep(1.0)
+        self.decrypt_folder(close_key_tuple, folder_selected)
 
         self.text_box.insert('end', f'[INFO] Процесс расшифрования закончен, вы можете закрыть это окно!')
 
@@ -126,17 +120,11 @@ class DecryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Исходный файл удален: {file_path}\n')
 
-    def decrypt_folder(self, close_key: tuple,
-                       folder_path: str, decrypt_threads: list[threading.Thread]) -> None:
+    def decrypt_folder(self, close_key: tuple, folder_path: str) -> None:
         for f_path in os.listdir(folder_path):
             file_path = os.path.join(folder_path, f_path)
 
             if os.path.isfile(file_path):
-                crypt_file_thread = threading.Thread(target=self.decrypt_file,
-                                                     args=(close_key, folder_path, file_path))
-
-                crypt_file_thread.start()
-
-                decrypt_threads.append(crypt_file_thread)
+                self.decrypt_file(close_key, folder_path, file_path)
             else:
-                self.decrypt_folder(close_key, file_path, decrypt_threads)
+                self.decrypt_folder(close_key, file_path)
