@@ -5,7 +5,7 @@ from time import sleep
 from tkinter import filedialog, messagebox
 from typing import Optional
 
-from Crypt import rsa_decrypt_file
+from Crypt import rsa_decrypt_file, is_file_crypted
 from SerialWriter import SerialWriterSingleton
 from stages.Stage import Stage
 
@@ -127,10 +127,13 @@ class DecryptWindowStage(Stage):
         self.text_box.insert('end', f'[INFO] Исходный файл удален: {file_path}\n')
 
     def decrypt_folder(self, close_key: tuple, folder_path: str) -> None:
-        for f_path in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, f_path)
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
 
             if os.path.isfile(file_path):
-                self.decrypt_file(close_key, folder_path, file_path)
+                if is_file_crypted(file_name):
+                    self.decrypt_file(close_key, folder_path, file_path)
+                else:
+                    self.text_box.insert('end', f'[INFO] Файл не зашифрован, пропускаем: {file_path}\n')
             else:
                 self.decrypt_folder(close_key, file_path)

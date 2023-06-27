@@ -1,5 +1,6 @@
 import logging
 import os.path
+import re
 import shutil
 from functools import cache
 from math import isqrt, gcd
@@ -171,3 +172,7 @@ def check_rsa_keys_correctness(keys: Keys) -> bool:
         shutil.rmtree(samples_directory)
 
     return keys_is_correct
+
+
+def is_file_crypted(file_name: str) -> bool:
+    return re.match(r'^[а-яА-Я\w\.\-]+\.crypted$', file_name) is not None

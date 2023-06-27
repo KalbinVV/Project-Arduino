@@ -2,6 +2,7 @@ import logging
 import os
 import threading
 import tkinter as tk
+from time import sleep
 from tkinter import filedialog, messagebox
 
 from Crypt import rsa_crypt_file, check_rsa_keys_correctness
@@ -98,6 +99,8 @@ class CryptWindowStage(Stage):
 
         while not check_rsa_keys_correctness(keys):
             self.text_box.insert('end', f'[INFO] Ключи не прошли валидацию, повторная попытка!\n')
+
+            sleep(1)
 
             keys = serial_writer.generate_keys()
 
