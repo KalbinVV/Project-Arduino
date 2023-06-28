@@ -1,4 +1,6 @@
 import glob
+import os
+import re
 import sys
 from pathlib import Path
 from tkinter import PhotoImage
@@ -54,3 +56,36 @@ def get_serial_ports():
         except (OSError, serial.SerialException):
             pass
     return result
+
+
+def get_amount_of_files_in_folder(folder_path: str) -> int:
+    amount_of_files = 0
+
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+
+        if os.path.isfile(file_path):
+            amount_of_files += 1
+        else:
+            amount_of_files += get_amount_of_files_in_folder(file_path)
+
+    return amount_of_files
+
+
+def is_file_crypted(file_name: str) -> bool:
+    return re.match(r'^[а-яА-Я\w\.\-]+\.crypted$', file_name) is not None
+
+
+def get_amount_of_crypted_files_in_folder(folder_path: str) -> int:
+    amount_of_files = 0
+
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+
+        if os.path.isfile(file_path):
+            if is_file_crypted(file_name):
+                amount_of_files += 1
+        else:
+            amount_of_files += get_amount_of_crypted_files_in_folder(file_path)
+
+    return amount_of_files

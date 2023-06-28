@@ -1,5 +1,3 @@
-from tkinter import messagebox
-
 from SerialWriter import SerialWriterSingleton
 from stages.CryptWindowStage import CryptWindowStage
 from stages.InputWindowStage import InputWindowStage

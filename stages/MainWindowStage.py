@@ -19,15 +19,22 @@ class MainWindowStage(Stage):
         return '600x400'
 
     def run(self, window: tk.Tk) -> None:
-        title_label = tk.Label(window, text="CryptShield", font='Monospace 28 bold',
-                               background='#000036', fg='white')
+        title_label = tk.Label(window, text="CryptShield", font='Monospace 18 bold',
+                               background='white')
+
+        logo_image = load_image('shield.png', (32, 32))
+
+        logo_image_label = tk.Label(window, image=logo_image, background='white')
+        logo_image_label.image = logo_image
+
         title_label.place(relx=0.5, rely=0.1, anchor='center')
+        logo_image_label.place(relx=0.7, rely=0.1, anchor='center')
 
         crypt_button_image = load_image('crypt_button.png', (600, 100))
 
         crypt_button = tk.Button(window, image=crypt_button_image,
                                  command=lambda: self.on_crypt(window),
-                                 background='#000036', activebackground='black')
+                                 background='white')
         crypt_button.image = crypt_button_image
 
         crypt_button.place(x=0, rely=0.25, width=600, height=100)
@@ -36,14 +43,13 @@ class MainWindowStage(Stage):
 
         decrypt_button = tk.Button(window, image=decrypt_button_image,
                                    command=lambda: self.on_decrypt(window),
-                                   background='#000036', activebackground='black')
+                                   background='white')
         decrypt_button.image = decrypt_button_image
 
         decrypt_button.place(x=0, rely=0.55, width=600, height=100)
 
         university_title = tk.Button(window, text='Orenburg 2023',
-                                     font='Monospace 18 bold', background='#000036',
-                                     fg='white',
+                                     font='Monospace 18 bold', background='white',
                                      command=lambda: self.on_key_test(window))
         university_title.place(relx=0.5, rely=0.9, anchor='center')
 

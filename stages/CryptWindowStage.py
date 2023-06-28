@@ -3,85 +3,74 @@ import os
 import threading
 import tkinter as tk
 from time import sleep
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
+from typing import Optional
 
 from Crypt import rsa_crypt_file, check_rsa_keys_correctness
 from SerialWriter import SerialWriterSingleton
-from Utils import Keys
+from Utils import Keys, load_image, get_amount_of_files_in_folder
 from stages.Stage import Stage
 
 
 class CryptWindowStage(Stage):
     def __init__(self, password: str):
-        self.text_box = None
+        self.text_box: Optional[tk.Text] = None
         self.password = password
+        self.progressbar: Optional[ttk.Progressbar] = None
+        self.current_status_label: Optional[tk.Label] = None
+        self.progressbar_value = 0
+        self.amount_of_files = 0
+        self.file_crypted_amount = 0
+        self.progress_bar_value_label: Optional[tk.Label] = None
 
     def get_title(self) -> str:
         return 'Шифрование'
 
     def get_geometry(self) -> str:
-        return '822x483'
+        return '800x400'
 
     def run(self, window: tk.Tk) -> None:
-        canvas = tk.Canvas(
-            window,
-            bg="#FFFFFF",
-            height=483,
-            width=822,
-            bd=0,
-            highlightthickness=0,
-            relief="ridge"
-        )
+        background_label = tk.Label(window, background='#000036')
+        background_label.place(relx=0.5, rely=0, anchor='center', width=800, relheight=0.6)
 
-        canvas.place(x=0, y=0)
-        canvas.create_rectangle(
-            0.0,
-            0.0,
-            822.0,
-            490.0,
-            fill="#F4ECEC",
-            outline="")
+        title_label = tk.Label(window, text="CryptShield", font='Monospace 18 bold',
+                               background='#000036',
+                               foreground='white')
 
-        canvas.create_text(
-            390.0,
-            417.0,
-            anchor="nw",
-            text="OSU\n2023",
-            fill="#000000",
-            font="Monospace 16 bold",
-            justify="center"
-        )
+        logo_image = load_image('white-shield.png', (32, 32))
 
-        canvas.create_text(
-            40.0,
-            12.0,
-            anchor="nw",
-            text="CryptShield",
-            fill="#000000",
-            font="Monospace 16 bold"
-        )
+        logo_image_label = tk.Label(window, image=logo_image, background='#000036')
+        logo_image_label.image = logo_image
 
-        canvas.create_text(
-            260.0,
-            77.0,
-            anchor="nw",
-            text="Шифрование в процессе...",
-            fill="#000000",
-            font="Monospace 16 bold"
-        )
-        self.text_box = tk.Text(
-            bd=0,
-            bg="#D9D9D9",
-            fg="#000716",
-            highlightthickness=0,
-            font="Monospace 8 bold"
-        )
-        self.text_box.place(
-            x=0.0,
-            y=155.0,
-            width=822.0,
-            height=245.0
-        )
+        title_label.place(relx=0.5, rely=0.1, anchor='center', relheight=0.1)
+        logo_image_label.place(relx=0.65, rely=0.1, anchor='center', relheight=0.1)
+
+        self.current_status_label = tk.Label(window, background='#000036', font='Monospace 12 bold',
+                                             text='Генерация ключа...',
+                                             foreground='white')
+        self.current_status_label.place(relx=0.5, rely=0.2, anchor='center', relheight=0.1)
+
+        style = ttk.Style()
+
+        style.configure("blue.Horizontal.TProgressbar", foreground='#000036', background='black',
+                        troughcolor='#000036')
+
+        self.progressbar_value = 0
+
+        self.progressbar = ttk.Progressbar(window, orient="horizontal", length=100,
+                                           maximum=100,
+                                           style="blue.Horizontal.TProgressbar",
+                                           mode="determinate")
+        self.progressbar.place(relx=0.5, rely=0.3, anchor='center', relheight=0.1, relwidth=1)
+
+        self.progress_bar_value_label = tk.Label(window, text='0%',
+                                                 font='Monospace 8 bold',
+                                                 background='#000036',
+                                                 foreground='white')
+        self.progress_bar_value_label.place(relx=0.5, rely=0.3, anchor='center')
+
+        self.text_box = tk.Text(window, font='Monospace 8 bold', background='white')
+        self.text_box.place(relx=0.5, rely=0.68, anchor='center', relheight=0.65, relwidth=1)
 
         self.text_box.insert('end', '[INFO] Хэш пароля сохранен!\n')
 
@@ -95,14 +84,18 @@ class CryptWindowStage(Stage):
 
         keys: Keys = serial_writer.generate_keys()
 
+        self.current_status_label.configure(text='Валидация ключа...')
+
         self.text_box.insert('end', f'[INFO] Валидация ключа...\n')
 
         while not check_rsa_keys_correctness(keys):
             self.text_box.insert('end', f'[INFO] Ключи не прошли валидацию, повторная попытка!\n')
 
-            sleep(1)
+            sleep(3)
 
             keys = serial_writer.generate_keys()
+
+        self.current_status_label.configure(text='Сохранение ключа...')
 
         self.text_box.insert('end', f'[INFO] Ключи шифрования сгенерированы!\n')
 
@@ -116,6 +109,8 @@ class CryptWindowStage(Stage):
         folder_selected = filedialog.askdirectory()
 
         if isinstance(folder_selected, tuple):  # Если пользователь не выбрал директорию
+            self.current_status_label.configure(text='Шифрование прекращено!')
+
             messagebox.showerror(title='Директория не была выбрана!',
                                  message='Процесс шифрования прекращен!')
 
@@ -123,14 +118,22 @@ class CryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Выбрана директория: {folder_selected}\n')
 
+        self.amount_of_files = get_amount_of_files_in_folder(folder_selected)
+
+        self.current_status_label.configure(text='Шифрование файлов...')
+
         self.crypt_folder(keys.open_key, folder_selected)
 
         self.text_box.insert('end', f'[INFO] Процесс шифрования закончен, вы можете закрыть это окно!')
+
+        self.current_status_label.configure(text='Шифрование закончено!')
 
         messagebox.showinfo(title='Процесс закончен!',
                             message='Шифрование закончено, вы можете закрыть окно и извлечь ключ!')
 
     def crypt_file(self, open_key: tuple[int, int], folder_selected: str, file_path: str) -> None:
+        self.current_status_label.configure(text=f'Шифрование файла: {os.path.basename(file_path)}')
+
         self.text_box.insert('end', f'[INFO] Шифрование файла {file_path}...\n')
 
         rsa_crypt_file(open_key, folder_selected, file_path)
@@ -140,6 +143,15 @@ class CryptWindowStage(Stage):
 
         self.text_box.insert('end', f'[INFO] Исходный файл удален: {file_path}\n')
 
+        self.file_crypted_amount += 1
+
+        self.progressbar_value = (self.file_crypted_amount * 100) // self.amount_of_files
+        self.progressbar.configure(value=self.progressbar_value)
+        self.progress_bar_value_label.configure(text=f'{self.progressbar_value}%')
+
+        if self.progressbar_value >= 50:
+            self.progress_bar_value_label.configure(background='black')
+
     def crypt_folder(self, open_key: tuple[int, int], folder_path: str) -> None:
         for f_path in os.listdir(folder_path):
             file_path = os.path.join(folder_path, f_path)
@@ -148,8 +160,3 @@ class CryptWindowStage(Stage):
                 self.crypt_file(open_key, folder_path, file_path)
             else:
                 self.crypt_folder(open_key, file_path)
-
-
-
-
-

@@ -172,7 +172,3 @@ def check_rsa_keys_correctness(keys: Keys) -> bool:
         shutil.rmtree(samples_directory)
 
     return keys_is_correct
-
-
-def is_file_crypted(file_name: str) -> bool:
-    return re.match(r'^[а-яА-Я\w\.\-]+\.crypted$', file_name) is not None

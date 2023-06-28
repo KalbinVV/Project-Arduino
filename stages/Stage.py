@@ -21,7 +21,7 @@ class Stage:
     def init(self) -> None:
         window = tk.Tk()
 
-        window.configure(bg="#000036")
+        window.configure(bg="white")
 
         window.resizable(False, False)
 

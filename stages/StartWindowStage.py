@@ -21,24 +21,27 @@ class StartWindowStage(Stage):
 
     def run(self, window: tk.Tk) -> None:
         title_label = tk.Label(window, text="CryptShield",
-                               font='Monospace 48 bold', background='#000036', fg='white')
+                               font='Monospace 48 bold',
+                               background='white')
         title_label.place(relx=0.5, rely=0.3, anchor='center')
 
         university_label = tk.Label(window, text="Orenburg 2023",
-                                    font='Monospace 24 bold', background='#000036',
-                                    fg='white')
+                                    font='Monospace 24 bold',
+                                    background='white')
         university_label.place(relx=0.46, rely=0.45, anchor='nw')
 
         connect_to_device_button = tk.Button(window, text='Подключиться к устройству',
                                              font='Monospace 16 bold',
-                                             background='#000036', borderwidth=0,
-                                             fg='white',
-                                             command=lambda: self.on_connect_to_device(window))
+                                             borderwidth=0,
+                                             command=lambda: self.on_connect_to_device(window),
+                                             background='white',
+                                             activebackground='black',
+                                             activeforeground='white')
         connect_to_device_button.place(relx=0.5, rely=0.8, anchor='center')
 
         usb_logo_image = load_image('usb.png', (32, 32))
 
-        usb_logo_label = tk.Label(window, image=usb_logo_image, borderwidth=0, background='#000036')
+        usb_logo_label = tk.Label(window, image=usb_logo_image, borderwidth=0, background='white')
         usb_logo_label.image = usb_logo_image
 
         usb_logo_label.place(relx=0.9, rely=0.8, anchor='center')
