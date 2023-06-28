@@ -1,7 +1,10 @@
 import glob
 import sys
 from pathlib import Path
+from tkinter import PhotoImage
 from typing import NamedTuple
+
+from PIL import ImageTk, Image
 
 import serial
 
@@ -16,6 +19,12 @@ ASSETS_PATH = Path(r"assets")
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
+
+
+def load_image(image_name: str, image_size: tuple[int, int]) -> PhotoImage:
+    usb_logo_image = Image.open(relative_to_assets(image_name))
+    usb_logo_image = usb_logo_image.resize(image_size, Image.ANTIALIAS)
+    return ImageTk.PhotoImage(usb_logo_image)
 
 
 def get_serial_ports():

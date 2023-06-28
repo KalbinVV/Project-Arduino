@@ -3,7 +3,7 @@ from time import sleep
 from tkinter import messagebox
 
 from SerialWriter import SerialWriterSingleton
-from Utils import relative_to_assets
+from Utils import relative_to_assets, load_image
 from stages.ErrorWindowStage import ErrorWindowStage
 from stages.MainWindowStage import MainWindowStage
 from stages.Stage import Stage
@@ -17,71 +17,31 @@ class StartWindowStage(Stage):
         return 'Стартовое окно'
 
     def get_geometry(self) -> str:
-        return '374x486'
+        return '500x300'
 
     def run(self, window: tk.Tk) -> None:
-        canvas = tk.Canvas(
-            window,
-            bg="#FFFFFF",
-            height=486,
-            width=374,
-            bd=0,
-            highlightthickness=0,
-            relief="ridge"
-        )
+        title_label = tk.Label(window, text="CryptShield",
+                               font='Monospace 48 bold', background='#000036', fg='white')
+        title_label.place(relx=0.5, rely=0.3, anchor='center')
 
-        canvas.place(x=0, y=0)
-        canvas.create_rectangle(
-            0.0,
-            6.0,
-            374.0,
-            496.0,
-            fill="#F4ECEC",
-            outline="")
+        university_label = tk.Label(window, text="Orenburg 2023",
+                                    font='Monospace 24 bold', background='#000036',
+                                    fg='white')
+        university_label.place(relx=0.46, rely=0.45, anchor='nw')
 
-        self.arduino_icon = tk.PhotoImage(
-            file=relative_to_assets("arduino_icon.png"))
+        connect_to_device_button = tk.Button(window, text='Подключиться к устройству',
+                                             font='Monospace 16 bold',
+                                             background='#000036', borderwidth=0,
+                                             fg='white',
+                                             command=lambda: self.on_connect_to_device(window))
+        connect_to_device_button.place(relx=0.5, rely=0.8, anchor='center')
 
-        canvas.create_image(
-            187.0,
-            188.0,
-            image=self.arduino_icon
-        )
+        usb_logo_image = load_image('usb.png', (32, 32))
 
-        canvas.create_text(
-            85,
-            11.0,
-            anchor="nw",
-            text="CryptShield",
-            fill="#000000",
-            font="Monospace 24"
-        )
+        usb_logo_label = tk.Label(window, image=usb_logo_image, borderwidth=0, background='#000036')
+        usb_logo_label.image = usb_logo_image
 
-        canvas.create_text(
-            50.0,
-            420.0,
-            anchor="nw",
-            text="Бесплатно & Безопасно\n2023",
-            fill="#000000",
-            font="Monospace 16",
-            justify='center'
-        )
-
-        connect_to_device_button = tk.Button(
-            text='Подключиться к устройству',
-            font='Monospace 12',
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.on_connect_to_device(window),
-            relief="flat"
-        )
-
-        connect_to_device_button.place(
-            x=50.0,
-            y=298.0,
-            width=290.0,
-            height=34.0
-        )
+        usb_logo_label.place(relx=0.9, rely=0.8, anchor='center')
 
     @classmethod
     def on_connect_to_device(cls, window: tk.Tk) -> None:

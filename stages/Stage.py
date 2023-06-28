@@ -21,6 +21,8 @@ class Stage:
     def init(self) -> None:
         window = tk.Tk()
 
+        window.configure(bg="#000036")
+
         window.resizable(False, False)
 
         window.title(self.get_title())

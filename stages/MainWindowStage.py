@@ -1,5 +1,5 @@
 import tkinter as tk
-from Utils import relative_to_assets
+from Utils import relative_to_assets, load_image
 from stages.CryptInputWindowStage import CryptInputWindowStage
 from stages.DecryptInputWindowStage import DecryptInputWindowStage
 from stages.KeyTestWindowStage import KeyTestWindowStage
@@ -16,115 +16,36 @@ class MainWindowStage(Stage):
         return 'Главное окно'
 
     def get_geometry(self) -> str:
-        return '822x481'
+        return '600x400'
 
     def run(self, window: tk.Tk) -> None:
-        canvas = tk.Canvas(
-            window,
-            bg="#FFFFFF",
-            height=481,
-            width=822,
-            bd=0,
-            highlightthickness=0,
-            relief="ridge"
-        )
+        title_label = tk.Label(window, text="CryptShield", font='Monospace 28 bold',
+                               background='#000036', fg='white')
+        title_label.place(relx=0.5, rely=0.1, anchor='center')
 
-        canvas.place(x=0, y=0)
-        canvas.create_rectangle(
-            0.0,
-            0.0,
-            822.0,
-            490.0,
-            fill="#F4ECEC",
-            outline="")
+        crypt_button_image = load_image('crypt_button.png', (600, 100))
 
-        canvas.create_text(
-            310.0,
-            8.0,
-            anchor="nw",
-            text="CryptShield",
-            fill="#000000",
-            font="Monospace 24 bold"
-        )
+        crypt_button = tk.Button(window, image=crypt_button_image,
+                                 command=lambda: self.on_crypt(window),
+                                 background='#000036', activebackground='black')
+        crypt_button.image = crypt_button_image
 
-        canvas.create_text(
-            280.0,
-            424.0,
-            anchor="nw",
-            text="Бесплатно & Безопасно\n2023",
-            fill="#000000",
-            font="Monospace 16",
-            justify="center"
-        )
+        crypt_button.place(x=0, rely=0.25, width=600, height=100)
 
-        self.crypt_icon = tk.PhotoImage(
-            file=relative_to_assets("crypt_icon.png"))
-        canvas.create_image(
-            124.0,
-            227.0,
-            image=self.crypt_icon
-        )
+        decrypt_button_image = load_image('decrypt_button.png', (600, 100))
 
-        self.decrypt_icon = tk.PhotoImage(
-            file=relative_to_assets("decrypt_icon.png"))
-        canvas.create_image(
-            418.0,
-            227.0,
-            image=self.decrypt_icon
-        )
+        decrypt_button = tk.Button(window, image=decrypt_button_image,
+                                   command=lambda: self.on_decrypt(window),
+                                   background='#000036', activebackground='black')
+        decrypt_button.image = decrypt_button_image
 
-        crypt_button = tk.Button(
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.on_crypt(window),
-            relief="flat",
-            text="Зашифровать",
-            font="Monospace 12 bold"
-        )
-        crypt_button.place(
-            x=68.0,
-            y=303.0,
-            width=114.0,
-            height=38.0
-        )
+        decrypt_button.place(x=0, rely=0.55, width=600, height=100)
 
-        decrypt_button = tk.Button(
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.on_decrypt(window),
-            relief="flat",
-            text="Расшифровать",
-            font="Monospace 12 bold"
-        )
-        decrypt_button.place(
-            x=339.0,
-            y=303.0,
-            width=152.0,
-            height=44.0
-        )
-
-        create_key_button = tk.Button(
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.on_key_test(window),
-            relief="flat",
-            text="Тест ключа",
-            font="Monospace 12 bold"
-        )
-        create_key_button.place(
-            x=622.0,
-            y=307.0,
-            width=127.0,
-            height=44.0
-        )
-
-        self.create_key_icon = tk.PhotoImage(
-            file=relative_to_assets("create_key_icon.png"))
-        canvas.create_image(
-            685.0,
-            245.0,
-            image=self.create_key_icon
-        )
+        university_title = tk.Button(window, text='Orenburg 2023',
+                                     font='Monospace 18 bold', background='#000036',
+                                     fg='white',
+                                     command=lambda: self.on_key_test(window))
+        university_title.place(relx=0.5, rely=0.9, anchor='center')
 
     @classmethod
     def on_crypt(cls, window: tk.Tk) -> None:
